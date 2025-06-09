@@ -8,6 +8,46 @@ Most AI applications struggle with consistent tool usage and task completion. Pr
 
 **Stop paying token taxes for basic functionality.** If you're running local models on your own hardware, you shouldn't need to pay rent-seeking middlemen for prompt optimization. This is community-owned knowledge infrastructure.
 
+## Democratizing AI Through Transparent Knowledge
+
+### No Hidden Prompts - Everything is Readable
+
+Prompt Composer embodies a radical transparency philosophy: **no hidden knowledge, no black boxes**. All prompt guidance is stored in plain text markdown files that developers can read, understand, and modify:
+
+```
+prompts/
+├── domains/        # Domain-specific guidance (filesystem, programming, analysis, system admin)
+├── behaviors/      # Universal patterns (planning, progress monitoring, tool usage, reasoning)
+```
+
+### Community-Owned Wisdom
+
+This isn't just a library - it's a **democratized knowledge repository** where:
+
+- **Domain experts contribute proven patterns** (medical professionals → clinical reasoning, financial analysts → market analysis)
+- **Tool developers optimize usage patterns** for their MCP servers
+- **Practitioners share real-world methodologies** that actually work
+- **Everyone benefits** from collective intelligence
+
+### Customizable for Your Needs
+
+```python
+# Use default community prompts
+response = prompt_composer.compose_system_prompt(request)
+
+# Use your organization's custom prompts
+response = prompt_composer.compose_system_prompt(
+    request, 
+    prompts_dir="/path/to/your/company/prompts"
+)
+```
+
+Organizations can:
+- Override default prompts with company-specific best practices
+- Add proprietary domain knowledge while keeping core logic
+- Maintain competitive advantages through specialized guidance
+- Contribute improvements back to the community
+
 ## The Problem We Solve
 
 Transform this basic prompt:
@@ -263,6 +303,49 @@ LLM (receives optimized system prompt + user prompt)
 MCP Tools (LLM calls these during execution)
 ```
 
+### Transparent Knowledge Structure
+
+Prompt-composer loads all guidance from readable text files, organized by purpose:
+
+```
+prompts/
+├── domains/           # Domain-specific guidance
+│   ├── filesystem.md     # File operations best practices
+│   ├── programming.md    # Code development guidance  
+│   ├── analysis.md       # Data analysis methodologies
+│   └── system.md         # System administration patterns
+├── behaviors/         # Universal behavioral patterns
+│   ├── planning.md       # Complex task planning guidance
+│   ├── progress.md       # Progress monitoring interventions
+│   ├── tools.md          # General tool usage patterns
+│   └── reasoning.md      # Meta-cognitive patterns
+└── server_patterns.toml  # MCP server type recognition patterns
+```
+
+### Dynamic Tool Discovery
+
+Prompt-composer uses **zero hardcoded server assumptions**. Instead, it loads server patterns from the same transparent prompts directory:
+
+```
+prompts/
+└── server_patterns.toml  # Community-editable server patterns
+```
+
+This means:
+- **No vendor lock-in**: Works with any MCP server, not just predefined ones
+- **Community extensible**: Add new server types without touching core code
+- **Transparent logic**: All pattern matching rules are visible and editable
+
+### Dynamic Composition Process
+
+1. **Tool Discovery**: Analyze MCP configuration using external patterns to identify available tools
+2. **Context Assessment**: Evaluate user prompt, session state, and task complexity
+3. **Module Selection**: Choose relevant prompt modules based on tools and context
+4. **Content Loading**: Load guidance from appropriate `.md` files
+5. **Intelligent Assembly**: Compose final system prompt with relevant guidance
+
+This architecture ensures that **every piece of guidance is transparent, modifiable, and community-improvable**.
+
 Prompt-composer is **application infrastructure** - it helps you build better prompts for your LLM, it's not a tool that your LLM calls.
 
 ### Four Layers of Intelligence
@@ -277,11 +360,21 @@ Prompt-composer is **application infrastructure** - it helps you build better pr
 ## Community-Driven Knowledge Base
 
 As this project grows, domain experts contribute proven patterns:
-- **Medical professionals** → Clinical reasoning workflows
-- **Financial analysts** → Market analysis methodologies  
-- **Legal experts** → Contract review approaches
-- **Scientists** → Research methodology guidance
+- **Medical professionals** → Clinical reasoning workflows (in `prompts/domains/medical.md`)
+- **Financial analysts** → Market analysis methodologies (in `prompts/domains/finance.md`)
+- **Legal experts** → Contract review approaches (in `prompts/domains/legal.md`)
+- **Scientists** → Research methodology guidance (in `prompts/domains/research.md`)
 - **Tool developers** → Optimal usage patterns for their MCP servers
+
+### Transparent Contribution Process
+
+Every contribution is **visible and reviewable**:
+1. Submit new `.md` files or improvements to existing ones
+2. Changes are reviewed by domain experts and the community
+3. All guidance remains in plain text, readable by developers
+4. No hidden algorithms or black-box prompt engineering
+
+This creates a **virtuous cycle**: better prompts → better AI performance → more contributors → even better prompts.
 
 Every contribution makes everyone's AI assistants more effective.
 
