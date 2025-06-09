@@ -22,6 +22,17 @@ PROGRAMMING BEST PRACTICES: Read code before changing it, make surgical edits...
 PROGRESS MONITORING: You've made 6 tool calls, assess your progress...
 ```
 
+## Stateless Design
+
+Prompt-composer is completely stateless - it doesn't store or track any session information. Instead, your application passes in the current session state, making the library:
+
+- **Simple**: No databases, persistence, or session management complexity
+- **Flexible**: Works with any application architecture (microservices, monoliths, serverless)
+- **Reliable**: No state corruption or concurrency issues
+- **Portable**: Same behavior across different deployment environments
+
+Your application manages sessions however it wants (files, databases, memory) and just passes the relevant state to get optimized prompts.
+
 ## Complete Examples
 
 ### Example 1: Simple File Reading Task
@@ -29,12 +40,14 @@ PROGRESS MONITORING: You've made 6 tool calls, assess your progress...
 **Input:**
 ```python
 compose_system_prompt(
-    session_id="user123_chat456",
     user_prompt="Look at config.json and tell me what's in it",
     mcp_config={
         "mcpServers": {
             "desktop-commander": {"command": "npx", "args": ["@modelcontextprotocol/server-filesystem"]}
         }
+    },
+    session_state={
+        "tool_call_count": 0
     }
 )
 ```
@@ -66,11 +79,14 @@ When a user asks you to examine a file, your first step should be to read the fi
 **Input:**
 ```python
 compose_system_prompt(
-    session_id="dev_session_789",
     user_prompt="Refactor this Python codebase to use async/await throughout",
     mcp_config=filesystem_mcp_config,
     domain_hints=["programming"],
-    task_complexity="complex"
+    task_complexity="complex",
+    session_state={
+        "tool_call_count": 0,
+        "has_plan": False
+    }
 )
 ```
 
@@ -114,11 +130,14 @@ PROGRESS MONITORING:
 **Input:**
 ```python
 compose_system_prompt(
-    session_id="analysis_session_123",  # Same session as before
     user_prompt="Continue analyzing the sales data",
     mcp_config=data_tools_config,
-    domain_hints=["analysis"]
-    # prompt-composer automatically tracks this session's history
+    domain_hints=["analysis"],
+    session_state={
+        "tool_call_count": 6,
+        "original_task": "Analyze Q4 sales data and identify trends",
+        "has_plan": True
+    }
 )
 ```
 
@@ -150,12 +169,14 @@ TOOL USAGE:
 **Input:**
 ```python
 compose_system_prompt(
-    session_id="weather_check_101",
     user_prompt="What's the weather like today?",
     mcp_config={
         "mcpServers": {
             "weather": {"command": "weather-mcp-server", "args": ["--api-key", "..."]}
         }
+    },
+    session_state={
+        "tool_call_count": 0
     }
 )
 ```
@@ -177,7 +198,6 @@ When working with weather APIs:
 **Input:**
 ```python
 compose_system_prompt(
-    session_id="backup_strategy_design",
     user_prompt="Create a comprehensive backup strategy for our development environment",
     mcp_config={
         "mcpServers": {
@@ -186,7 +206,11 @@ compose_system_prompt(
             "aws": aws_s3_config
         }
     },
-    task_complexity="complex"
+    task_complexity="complex",
+    session_state={
+        "tool_call_count": 0,
+        "has_plan": False
+    }
 )
 ```
 
@@ -271,11 +295,14 @@ pip install prompt-composer
 ```python
 from prompt_composer import compose_system_prompt
 
-# Compose system prompt based on your MCP configuration
+# Compose system prompt based on your MCP configuration and session state
 system_prompt = compose_system_prompt(
-    session_id="your_session_id",
     user_prompt="Your user's request",
-    mcp_config=your_mcp_configuration
+    mcp_config=your_mcp_configuration,
+    session_state={
+        "tool_call_count": 0,  # Track progress
+        "has_plan": False      # Task planning state
+    }
 )
 
 # Use with your local LLM
@@ -296,9 +323,12 @@ const { composeSystemPrompt } = require('prompt-composer');
 
 // Compose system prompt 
 const systemPrompt = await composeSystemPrompt({
-    sessionId: "your_session_id",
     userPrompt: "Your user's request", 
-    mcpConfig: yourMcpConfiguration
+    mcpConfig: yourMcpConfiguration,
+    sessionState: {
+        toolCallCount: 0,  // Track progress
+        hasPlan: false     // Task planning state
+    }
 });
 
 // Use with your local LLM
