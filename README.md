@@ -435,13 +435,6 @@ const response = await yourLocalLLM.chat(messages);
 ### Other Languages
 Language wrappers for Rust, Go, and other languages coming soon. The core engine is language-agnostic.
 
-## Documentation
-
-- [API Reference](docs/api-design.md)
-- [Architecture Details](docs/architecture.md) 
-- [Module System](docs/modules.md)
-- [Migration from LIT Platform](plans/migration-plan.md)
-
 ## Contributing
 
 We welcome contributions of behavioral patterns, domain expertise, and tool optimization knowledge. This is community-owned infrastructure - every improvement benefits everyone using local AI.
