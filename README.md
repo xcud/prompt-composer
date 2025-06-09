@@ -1,0 +1,330 @@
+# Prompt Composer
+
+A modular system prompt composition framework that encodes accumulated LLM interaction wisdom to maximize AI assistant effectiveness across different tools, tasks, and domains.
+
+## Why Prompt Composer?
+
+Most AI applications struggle with consistent tool usage and task completion. Prompt Composer solves this by systematically applying proven prompt engineering patterns based on available tools, task complexity, and domain requirements.
+
+**Stop paying token taxes for basic functionality.** If you're running local models on your own hardware, you shouldn't need to pay rent-seeking middlemen for prompt optimization. This is community-owned knowledge infrastructure.
+
+## The Problem We Solve
+
+Transform this basic prompt:
+```
+You have access to these tools: read_file, write_file, search_code...
+```
+
+Into intelligent, context-aware guidance that actually works:
+```
+COMPLEX TASK PLANNING: Create a detailed plan first and save it to a file...
+PROGRAMMING BEST PRACTICES: Read code before changing it, make surgical edits...
+PROGRESS MONITORING: You've made 6 tool calls, assess your progress...
+```
+
+## Complete Examples
+
+### Example 1: Simple File Reading Task
+
+**Input:**
+```python
+compose_system_prompt(
+    session_id="user123_chat456",
+    user_prompt="Look at config.json and tell me what's in it",
+    mcp_config={
+        "mcpServers": {
+            "desktop-commander": {"command": "npx", "args": ["@modelcontextprotocol/server-filesystem"]}
+        }
+    }
+)
+```
+
+**Output:**
+```
+You have access to the following tools:
+- desktop-commander.read_file: Read file contents
+- desktop-commander.list_directory: List directory contents
+
+To use a tool, respond with JSON in the following format:
+{
+  "tool": "desktop-commander.read_file",
+  "arguments": {
+    "path": "/absolute/path/to/file"
+  }
+}
+
+ALWAYS read files before analyzing them. When working with desktop-commander tools:
+- Use absolute paths for reliability (starting with '/' or drive letters like 'C:\')
+- Prefer read_file over execute_command for viewing file contents
+- Handle potential file access errors gracefully
+
+When a user asks you to examine a file, your first step should be to read the file using the available tools.
+```
+
+### Example 2: Complex Programming Task
+
+**Input:**
+```python
+compose_system_prompt(
+    session_id="dev_session_789",
+    user_prompt="Refactor this Python codebase to use async/await throughout",
+    mcp_config=filesystem_mcp_config,
+    domain_hints=["programming"],
+    task_complexity="complex"
+)
+```
+
+**Output:**
+```
+You have access to the following tools:
+- desktop-commander.read_file: Read file contents
+- desktop-commander.write_file: Write file contents
+- desktop-commander.edit_block: Make surgical edits
+- desktop-commander.search_code: Search within files
+
+COMPLEX TASK PLANNING:
+This appears to be a substantial refactoring task. Before beginning:
+1. Create a detailed plan breaking down the work into concrete steps
+2. Save this plan to a file so progress can be tracked
+3. Examine the current codebase structure thoroughly
+4. Identify all areas that need async conversion
+5. Plan the order of changes to minimize breaking dependencies
+
+PROGRAMMING BEST PRACTICES:
+- Read and understand existing code before making changes
+- Make surgical, targeted edits rather than large rewrites  
+- Use edit_block for small changes, write_file only for new files
+- Test changes incrementally when possible
+- Follow existing code style and patterns
+- Consider backwards compatibility implications
+
+FILE SYSTEM GUIDANCE:
+- Always read files before analyzing or modifying them
+- Use absolute paths for reliability
+- Use chunked writing for large files (25-30 lines max per write_file call)
+
+PROGRESS MONITORING:
+- After completing each major step, assess your progress
+- Update your plan as you learn more about the codebase
+- If you've made many tool calls, consider checking with the user about your approach
+```
+
+### Example 3: Session-Aware Progress Monitoring
+
+**Input:**
+```python
+compose_system_prompt(
+    session_id="analysis_session_123",  # Same session as before
+    user_prompt="Continue analyzing the sales data",
+    mcp_config=data_tools_config,
+    domain_hints=["analysis"]
+    # prompt-composer automatically tracks this session's history
+)
+```
+
+**Output:**
+```
+You have access to the following tools:
+- desktop-commander.read_file: Read file contents  
+- data-analysis.process_csv: Process CSV data
+
+CONTINUING PREVIOUS WORK:
+Your original task was: "Analyze Q4 sales data and identify trends"
+
+You've executed 6 tool calls so far. Take a moment to assess: Are you making clear progress toward completing the analysis? If you're not sure your next steps are essential, consider summarizing what you've accomplished and asking the user for guidance on priorities.
+
+DATA ANALYSIS METHODOLOGY:
+- Examine data structure and quality before drawing conclusions
+- Document your methodology and any assumptions you're making
+- Show your analytical work step-by-step for transparency  
+- Validate results and check for edge cases or anomalies
+- Summarize findings clearly with supporting evidence
+
+TOOL USAGE:
+- Always read files before processing to understand data structure
+- Handle potential data quality issues gracefully
+```
+
+### Example 4: Simple API Task
+
+**Input:**
+```python
+compose_system_prompt(
+    session_id="weather_check_101",
+    user_prompt="What's the weather like today?",
+    mcp_config={
+        "mcpServers": {
+            "weather": {"command": "weather-mcp-server", "args": ["--api-key", "..."]}
+        }
+    }
+)
+```
+
+**Output:**
+```
+You have access to the following tools:
+- weather.get_current: Get current weather
+- weather.get_forecast: Get weather forecast
+
+When working with weather APIs:
+- Request location information if not provided by the user
+- Handle API errors gracefully (service unavailable, invalid location, etc.)
+- Provide clear, user-friendly weather information
+```
+
+### Example 5: Multi-Tool Complex System Task
+
+**Input:**
+```python
+compose_system_prompt(
+    session_id="backup_strategy_design",
+    user_prompt="Create a comprehensive backup strategy for our development environment",
+    mcp_config={
+        "mcpServers": {
+            "desktop-commander": filesystem_config,
+            "github": github_api_config,
+            "aws": aws_s3_config
+        }
+    },
+    task_complexity="complex"
+)
+```
+
+**Output:**
+```
+You have access to the following tools:
+- desktop-commander.read_file: Read file contents
+- desktop-commander.write_file: Write file contents  
+- desktop-commander.execute_command: Run shell commands
+- github.list_repos: List GitHub repositories
+- aws.list_buckets: List S3 buckets
+
+COMPLEX TASK PLANNING:
+This is a comprehensive system design task. Before implementation:
+1. Create a detailed backup strategy plan covering all components
+2. Assess current infrastructure and identify what needs backing up
+3. Research backup best practices for development environments
+4. Design backup procedures, schedules, and recovery processes
+5. Document everything thoroughly for team use
+
+SYSTEM ADMINISTRATION GUIDANCE:
+- Gather comprehensive information about the current environment first
+- Consider security implications of backup procedures
+- Plan for both automated and manual backup scenarios
+- Include testing and validation of backup integrity
+- Document recovery procedures clearly
+
+MULTI-TOOL COORDINATION:
+- Use file system tools to examine local configuration
+- Use GitHub tools to understand repository structure  
+- Use AWS tools to assess cloud storage options
+- Coordinate information from all sources before making recommendations
+
+PROGRESS MONITORING:
+Given the complexity of this task, regularly assess your progress and check with the user about your approach and findings.
+```
+
+## Architecture
+
+### Application Stack
+```
+User Request
+     ↓
+LLM Application 
+     ↓
+prompt-composer (composes system prompt based on available MCP tools)
+     ↓  
+LLM (receives optimized system prompt + user prompt)
+     ↓
+MCP Tools (LLM calls these during execution)
+```
+
+Prompt-composer is **application infrastructure** - it helps you build better prompts for your LLM, it's not a tool that your LLM calls.
+
+### Four Layers of Intelligence
+
+1. **Tool Behavior Layer** - Recognizes tool categories and provides optimal usage patterns
+2. **Task Management Layer** - Planning, progress tracking, context management for complex work  
+3. **Domain Knowledge Layer** - Field-specific methodologies (programming, analysis, system administration)
+4. **Meta-Cognitive Layer** - Superior reasoning and self-monitoring patterns
+
+**90% Prompt Engineering Knowledge + 10% Composition Logic**
+
+## Community-Driven Knowledge Base
+
+As this project grows, domain experts contribute proven patterns:
+- **Medical professionals** → Clinical reasoning workflows
+- **Financial analysts** → Market analysis methodologies  
+- **Legal experts** → Contract review approaches
+- **Scientists** → Research methodology guidance
+- **Tool developers** → Optimal usage patterns for their MCP servers
+
+Every contribution makes everyone's AI assistants more effective.
+
+## Getting Started
+
+### Python
+```bash
+pip install prompt-composer
+```
+
+```python
+from prompt_composer import compose_system_prompt
+
+# Compose system prompt based on your MCP configuration
+system_prompt = compose_system_prompt(
+    session_id="your_session_id",
+    user_prompt="Your user's request",
+    mcp_config=your_mcp_configuration
+)
+
+# Use with your local LLM
+messages = [
+    {"role": "system", "content": system_prompt},
+    {"role": "user", "content": user_prompt}
+]
+response = your_local_llm.chat(messages)
+```
+
+### Node.js
+```bash
+npm install prompt-composer
+```
+
+```javascript
+const { composeSystemPrompt } = require('prompt-composer');
+
+// Compose system prompt 
+const systemPrompt = await composeSystemPrompt({
+    sessionId: "your_session_id",
+    userPrompt: "Your user's request", 
+    mcpConfig: yourMcpConfiguration
+});
+
+// Use with your local LLM
+const messages = [
+    { role: "system", content: systemPrompt },
+    { role: "user", content: userPrompt }
+];
+const response = await yourLocalLLM.chat(messages);
+```
+
+### Other Languages
+Language wrappers for Rust, Go, and other languages coming soon. The core engine is language-agnostic.
+
+## Documentation
+
+- [API Reference](docs/api-design.md)
+- [Architecture Details](docs/architecture.md) 
+- [Module System](docs/modules.md)
+- [Migration from LIT Platform](plans/migration-plan.md)
+
+## Contributing
+
+We welcome contributions of behavioral patterns, domain expertise, and tool optimization knowledge. This is community-owned infrastructure - every improvement benefits everyone using local AI.
+
+---
+
+**Democratizing high-functioning AI through systematized prompt engineering knowledge.**
+
+*Your hardware, your models, your data - no token taxes.*
