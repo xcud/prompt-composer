@@ -7,6 +7,10 @@ pub mod composition;
 #[cfg(feature = "python")]
 pub mod python;
 
+// NAPI-RS bindings - must be in lib.rs for proper registration
+#[cfg(feature = "nodejs")]
+use napi_derive::napi;
+
 use types::*;
 use composition::PromptComposer;
 use discovery::ToolDiscovery;
@@ -220,5 +224,70 @@ mod tests {
         if let Ok(behaviors) = list_available_behaviors() {
             println!("Available behaviors: {:?}", behaviors);
         }
+    }
+}
+
+// NAPI-RS bindings for Node.js
+#[cfg(feature = "nodejs")]
+mod napi_bindings {
+    use super::*;
+    use napi_derive::napi;
+
+    /// Compose a system prompt using the cached version for better performance
+    #[napi]
+    pub fn compose_system_prompt(request: String) -> napi::Result<String> {
+        use serde_json;
+        
+        // Parse the request
+        let parsed_request: types::PromptRequest = serde_json::from_str(&request)
+            .map_err(|e| napi::Error::from_reason(format!("Invalid JSON: {}", e)))?;
+        
+        // Call the cached version for better performance
+        let response = crate::compose_system_prompt_cached(parsed_request)
+            .map_err(|e| napi::Error::from_reason(format!("Composition failed: {}", e)))?;
+        
+        // Return as JSON string
+        serde_json::to_string(&response)
+            .map_err(|e| napi::Error::from_reason(format!("Serialization failed: {}", e)))
+    }
+
+    /// List available domain modules
+    #[napi]
+    pub fn list_available_domains() -> napi::Result<Vec<String>> {
+        crate::list_available_domains()
+            .map_err(|e| napi::Error::from_reason(format!("Failed to list domains: {}", e)))
+    }
+
+    /// List available behavior modules  
+    #[napi]
+    pub fn list_available_behaviors() -> napi::Result<Vec<String>> {
+        crate::list_available_behaviors()
+            .map_err(|e| napi::Error::from_reason(format!("Failed to list behaviors: {}", e)))
+    }
+
+    /// Check if the native bindings are available (always true)
+    #[napi]
+    pub fn is_available() -> bool {
+        true
+    }
+
+    /// Get status information as JSON string
+    #[napi]
+    pub fn get_status() -> napi::Result<String> {
+        use serde_json;
+        
+        let domains = crate::list_available_domains().unwrap_or_default();
+        let behaviors = crate::list_available_behaviors().unwrap_or_default();
+        
+        let status = serde_json::json!({
+            "available": true,
+            "source": "native",
+            "version": env!("CARGO_PKG_VERSION"),
+            "domains": domains,
+            "behaviors": behaviors
+        });
+        
+        serde_json::to_string(&status)
+            .map_err(|e| napi::Error::from_reason(format!("Serialization failed: {}", e)))
     }
 }

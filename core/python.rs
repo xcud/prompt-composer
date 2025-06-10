@@ -118,7 +118,7 @@ fn list_available_behaviors_in_dir(prompts_dir: &str) -> PyResult<String> {
 
 /// Python module definition
 #[pymodule]
-fn _prompt_composer(_py: Python, m: &PyModule) -> PyResult<()> {
+fn _system_prompt_composer(_py: Python, m: &PyModule) -> PyResult<()> {
     // Core functions
     m.add_function(wrap_pyfunction!(compose_system_prompt, m)?)?;
     m.add_function(wrap_pyfunction!(compose_system_prompt_with_prompts_dir, m)?)?;

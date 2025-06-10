@@ -25,9 +25,17 @@ chrono = { version = "0.4", features = ["serde"] }
 # Python bindings
 pyo3 = { version = "0.20", features = ["extension-module"], optional = true }
 
+# Node.js bindings
+napi = { version = "2", optional = true }
+napi-derive = { version = "2", optional = true }
+
 [features]
 default = []
 python = ["pyo3"]
+nodejs = ["napi", "napi-derive"]
+
+[build-dependencies]
+napi-build = "2"
 
 [profile.release]
 lto = true

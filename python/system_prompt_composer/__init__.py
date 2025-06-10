@@ -1,5 +1,5 @@
 """
-Prompt Composer - A modular system prompt composition framework
+System Prompt Composer - A modular system prompt composition framework
 
 This package provides intelligent system prompt generation based on available MCP tools,
 task complexity, and session state. It helps create more effective AI assistants by
@@ -10,7 +10,7 @@ read, understand, and customize.
 
 Example usage:
     import json
-    from prompt_composer import compose_system_prompt
+    from system_prompt_composer import compose_system_prompt
     
     # Prepare request
     request = {
@@ -42,7 +42,7 @@ Example usage:
 """
 
 import os
-from ._prompt_composer import (
+from ._system_prompt_composer import (
     compose_system_prompt_with_prompts_dir as _compose_system_prompt_with_prompts_dir,
     compose_system_prompt_cached_with_prompts_dir as _compose_system_prompt_cached_with_prompts_dir,
     refresh_server_tools,

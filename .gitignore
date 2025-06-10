@@ -56,3 +56,11 @@ ehthumbs.db
 plans/
 tests/
 venv/
+
+node_modules/
+
+# Native Node.js binaries
+*.node
+
+# NPM packages  
+*.tgz
