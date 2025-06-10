@@ -1,6 +1,6 @@
 {
   "name": "system-prompt-composer",
-  "version": "1.0.4",
+  "version": "1.0.5",
   "description": "Native Node.js bindings for prompt-composer - intelligent system prompt generation for AI assistants",
   "main": "index.js",
   "types": "index.d.ts",

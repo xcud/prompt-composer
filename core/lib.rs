@@ -146,30 +146,6 @@ pub async fn refresh_server_tools(server_name: &str, mcp_config: &McpConfig) -> 
     Ok(tools)
 }
 
-/// List available domain modules in default prompts directory
-pub fn list_available_domains() -> Result<Vec<String>, PromptError> {
-    let composer = PromptComposer::new();
-    composer.list_domains()
-}
-
-/// List available behavior modules in default prompts directory
-pub fn list_available_behaviors() -> Result<Vec<String>, PromptError> {
-    let composer = PromptComposer::new();
-    composer.list_behaviors()
-}
-
-/// List available domain modules in custom prompts directory
-pub fn list_available_domains_in_dir(prompts_dir: String) -> Result<Vec<String>, PromptError> {
-    let composer = PromptComposer::with_prompts_dir(prompts_dir);
-    composer.list_domains()
-}
-
-/// List available behavior modules in custom prompts directory
-pub fn list_available_behaviors_in_dir(prompts_dir: String) -> Result<Vec<String>, PromptError> {
-    let composer = PromptComposer::with_prompts_dir(prompts_dir);
-    composer.list_behaviors()
-}
-
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -281,34 +257,6 @@ mod napi_bindings {
             .map_err(|e| napi::Error::from_reason(format!("Serialization failed: {}", e)))
     }
 
-    /// List available domain modules
-    #[napi]
-    pub fn list_available_domains() -> napi::Result<Vec<String>> {
-        crate::list_available_domains()
-            .map_err(|e| napi::Error::from_reason(format!("Failed to list domains: {}", e)))
-    }
-
-    /// List available domain modules with custom prompts directory
-    #[napi]
-    pub fn list_available_domains_with_prompts_dir(prompts_dir: String) -> napi::Result<Vec<String>> {
-        crate::list_available_domains_in_dir(prompts_dir)
-            .map_err(|e| napi::Error::from_reason(format!("Failed to list domains: {}", e)))
-    }
-
-    /// List available behavior modules  
-    #[napi]
-    pub fn list_available_behaviors() -> napi::Result<Vec<String>> {
-        crate::list_available_behaviors()
-            .map_err(|e| napi::Error::from_reason(format!("Failed to list behaviors: {}", e)))
-    }
-
-    /// List available behavior modules with custom prompts directory
-    #[napi]
-    pub fn list_available_behaviors_with_prompts_dir(prompts_dir: String) -> napi::Result<Vec<String>> {
-        crate::list_available_behaviors_in_dir(prompts_dir)
-            .map_err(|e| napi::Error::from_reason(format!("Failed to list behaviors: {}", e)))
-    }
-
     /// Check if the native bindings are available (always true)
     #[napi]
     pub fn is_available() -> bool {
@@ -320,15 +268,18 @@ mod napi_bindings {
     pub fn get_status() -> napi::Result<String> {
         use serde_json;
         
-        let domains = crate::list_available_domains().unwrap_or_default();
-        let behaviors = crate::list_available_behaviors().unwrap_or_default();
+        let composer = crate::PromptComposer::new();
+        let domains = composer.list_domains().unwrap_or_default();
+        let behaviors = composer.list_behaviors().unwrap_or_default();
+        let tools = composer.list_tools().unwrap_or_default();
         
         let status = serde_json::json!({
             "available": true,
             "source": "native",
             "version": env!("CARGO_PKG_VERSION"),
             "domains": domains,
-            "behaviors": behaviors
+            "behaviors": behaviors,
+            "tools": tools
         });
         
         serde_json::to_string(&status)

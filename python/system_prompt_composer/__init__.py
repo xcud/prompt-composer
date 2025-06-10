@@ -46,12 +46,10 @@ from ._system_prompt_composer import (
     compose_system_prompt_with_prompts_dir as _compose_system_prompt_with_prompts_dir,
     compose_system_prompt_cached_with_prompts_dir as _compose_system_prompt_cached_with_prompts_dir,
     refresh_server_tools,
-    list_available_domains_in_dir,
-    list_available_behaviors_in_dir,
     get_status
 )
 
-__version__ = "1.0.4"
+__version__ = "1.0.5"
 
 # Get the path to the built-in prompts directory
 _BUILTIN_PROMPTS_DIR = os.path.join(os.path.dirname(__file__), 'prompts')
@@ -106,33 +104,11 @@ def compose_system_prompt_cached_with_prompts_dir(request_json, prompts_dir):
     """
     return _compose_system_prompt_cached_with_prompts_dir(request_json, prompts_dir)
 
-def list_available_domains():
-    """
-    List available domain prompt modules in the built-in prompt library.
-    
-    Returns:
-        list: List of available domain names
-    """
-    return list_available_domains_in_dir(_BUILTIN_PROMPTS_DIR)
-
-def list_available_behaviors():
-    """
-    List available behavior prompt modules in the built-in prompt library.
-    
-    Returns:
-        list: List of available behavior names
-    """
-    return list_available_behaviors_in_dir(_BUILTIN_PROMPTS_DIR)
-
 __all__ = [
     "compose_system_prompt", 
     "compose_system_prompt_with_prompts_dir",
     "compose_system_prompt_cached", 
     "compose_system_prompt_cached_with_prompts_dir",
     "refresh_server_tools",
-    "list_available_domains",
-    "list_available_behaviors",
-    "list_available_domains_in_dir",
-    "list_available_behaviors_in_dir",
     "get_status"
 ]

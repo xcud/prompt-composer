@@ -58,6 +58,12 @@ export interface StatusResponse {
  */
 export declare function composeSystemPrompt(request: PromptRequest | string): PromptResponse;
 
+/** List available domain modules */
+export declare function listAvailableDomains(): string[];
+
+/** List available behavior modules */
+export declare function listAvailableBehaviors(): string[];
+
 /** Check if the native bindings are available (always returns true) */
 export declare function isAvailable(): boolean;
 

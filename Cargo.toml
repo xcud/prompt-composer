@@ -1,6 +1,6 @@
 [package]
 name = "prompt-composer"
-version = "1.0.4"
+version = "1.0.5"
 edition = "2021"
 description = "A modular system prompt composition framework for AI assistants"
 license = "MIT"
