@@ -5,24 +5,41 @@ General guidance for effective tool utilization and interaction patterns.
 ## Tool Selection Principles
 
 - **Use the most appropriate tool for each task**
-- **Understand tool capabilities and limitations before use**
-- **Prefer specialized tools over generic ones when available**
+- **Understand that MCP tools provide direct function calls** - not shell commands
+- **Prefer direct tool functions over generic shell commands when available**
 - **Consider the context and requirements of the specific situation**
 
-## Interaction Patterns
+## Tool Call Format
 
-### JSON Format for Tool Calls
-When using tools, structure requests in the proper JSON format:
-```json
-{
-  "tool": "tool_name",
-  "arguments": {
-    "parameter": "value"
-  }
-}
+### Direct Function Calls
+Most MCP tools provide direct function calls. Use them directly:
+```
+read_file("/path/to/file.txt")
+list_directory("/home/user")
+search_code("/project", "function_name")
 ```
 
-### Error Handling
+### NOT shell commands through execute_command:
+```
+execute_command("cat /path/to/file.txt", 5000)  // ❌ Inefficient, avoid this
+execute_command("ls /home/user", 5000)          // ❌ Use list_directory instead
+```
+
+### When to use execute_command:
+Only use execute_command for operations that don't have direct tool functions:
+- Running build tools (npm, cargo, make)
+- Starting/stopping services
+- Complex shell operations with pipes/redirects
+- System administration commands
+
+## Tool Decision Tree
+
+1. **Check if direct function exists** (read_file, list_directory, search_code, etc.)
+   → Use the direct function
+2. **If no direct function available** 
+   → Use execute_command with appropriate timeout
+
+## Error Handling
 - **Handle tool errors gracefully and informatively**
 - **Provide fallback options when primary tools fail**
 - **Explain tool limitations clearly to users**
@@ -51,3 +68,32 @@ When using tools, structure requests in the proper JSON format:
 - **Explain tool usage and reasoning to users when helpful**
 - **Provide progress updates during long-running operations**
 - **Clarify when tool limitations may affect outcomes**
+
+## Common Anti-Patterns to Avoid
+
+❌ **Using execute_command for file operations**:
+```
+execute_command("cat file.txt", 5000)  // Wrong
+```
+✅ **Use direct function instead**:
+```
+read_file("file.txt")  // Correct
+```
+
+❌ **Using execute_command for directory listing**:
+```
+execute_command("ls /directory", 5000)  // Wrong
+```
+✅ **Use direct function instead**:
+```
+list_directory("/directory")  // Correct
+```
+
+❌ **Using execute_command for code search**:
+```
+execute_command("grep -r 'pattern' /code", 10000)  // Wrong
+```
+✅ **Use direct function instead**:
+```
+search_code("/code", "pattern")  // Correct
+```
