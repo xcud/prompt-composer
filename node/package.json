@@ -1,6 +1,6 @@
 {
   "name": "system-prompt-composer",
-  "version": "1.0.3",
+  "version": "1.0.4",
   "description": "Native Node.js bindings for prompt-composer - intelligent system prompt generation for AI assistants",
   "main": "index.js",
   "types": "index.d.ts",
@@ -18,8 +18,9 @@
   "scripts": {
     "build": "napi build --platform --release --cargo-cwd .. --features nodejs",
     "build:debug": "napi build --platform --cargo-cwd .. --features nodejs",
+    "postbuild": "node fix-bindings.js",
     "test": "node test.js",
-    "prepublishOnly": "npm run build && node add-wrappers.js && npm test"
+    "prepublishOnly": "npm run build && npm test"
   },
   "keywords": [
     "ai",

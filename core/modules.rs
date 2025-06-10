@@ -233,6 +233,74 @@ impl PromptModule for SystemModule {
     }
 }
 
+/// Generic domain module that loads content from domain files
+pub struct GenericDomainModule {
+    domain_name: String,
+}
+
+impl GenericDomainModule {
+    pub fn new(domain_name: String) -> Self {
+        Self { domain_name }
+    }
+}
+
+impl PromptModule for GenericDomainModule {
+    fn name(&self) -> &str {
+        &self.domain_name
+    }
+
+    fn generate_content(&self, _tools: &[Tool], _session_state: &SessionState, loader: &mut PromptLoader) -> Result<String, PromptError> {
+        match loader.load_domain(&self.domain_name) {
+            Ok(content) => {
+                let guidance = loader.extract_guidance(&content);
+                Ok(format!("\n{}:\n{}", self.domain_name.to_uppercase(), guidance))
+            }
+            Err(_) => {
+                // Domain file doesn't exist, return empty content
+                Ok(String::new())
+            }
+        }
+    }
+
+    fn applies_to(&self, _tools: &[Tool], _user_prompt: &str, _session_state: &SessionState) -> bool {
+        true // Always applies when explicitly requested
+    }
+}
+
+/// Generic behavior module that loads content from behavior files
+pub struct GenericBehaviorModule {
+    behavior_name: String,
+}
+
+impl GenericBehaviorModule {
+    pub fn new(behavior_name: String) -> Self {
+        Self { behavior_name }
+    }
+}
+
+impl PromptModule for GenericBehaviorModule {
+    fn name(&self) -> &str {
+        &self.behavior_name
+    }
+
+    fn generate_content(&self, _tools: &[Tool], _session_state: &SessionState, loader: &mut PromptLoader) -> Result<String, PromptError> {
+        match loader.load_behavior(&self.behavior_name) {
+            Ok(content) => {
+                let guidance = loader.extract_guidance(&content);
+                Ok(format!("\n{}:\n{}", self.behavior_name.to_uppercase(), guidance))
+            }
+            Err(_) => {
+                // Behavior file doesn't exist, return empty content
+                Ok(String::new())
+            }
+        }
+    }
+
+    fn applies_to(&self, _tools: &[Tool], _user_prompt: &str, _session_state: &SessionState) -> bool {
+        true // Always applies when explicitly requested
+    }
+}
+
 /// Detect if a task is complex based on user prompt
 fn is_complex_task(user_prompt: &str) -> bool {
     let complex_indicators = [
@@ -253,7 +321,9 @@ impl ModuleSelector {
     pub fn select_modules(
         tools: &[Tool], 
         user_prompt: &str, 
-        session_state: &SessionState
+        session_state: &SessionState,
+        domain_hints: Option<&[String]>,
+        behavior_hints: Option<&[String]>
     ) -> Vec<Box<dyn PromptModule>> {
         let mut modules: Vec<Box<dyn PromptModule>> = vec![];
         
@@ -262,36 +332,70 @@ impl ModuleSelector {
             modules.push(Box::new(ToolUsageModule));
         }
         
-        // Add domain-specific modules
-        let filesystem_module = FilesystemModule;
-        if filesystem_module.applies_to(tools, user_prompt, session_state) {
-            modules.push(Box::new(filesystem_module));
+        // Handle explicit domain hints first
+        if let Some(domains) = domain_hints {
+            for domain in domains {
+                match domain.as_str() {
+                    "filesystem" => modules.push(Box::new(FilesystemModule)),
+                    "programming" => modules.push(Box::new(ProgrammingModule)),
+                    "analysis" => modules.push(Box::new(AnalysisModule)),
+                    "system" => modules.push(Box::new(SystemModule)),
+                    _ => {
+                        // For unknown domains, create a generic domain module
+                        modules.push(Box::new(GenericDomainModule::new(domain.clone())));
+                    }
+                }
+            }
+        } else {
+            // Fall back to auto-detection for domain modules
+            let filesystem_module = FilesystemModule;
+            if filesystem_module.applies_to(tools, user_prompt, session_state) {
+                modules.push(Box::new(filesystem_module));
+            }
+            
+            let programming_module = ProgrammingModule;
+            if programming_module.applies_to(tools, user_prompt, session_state) {
+                modules.push(Box::new(programming_module));
+            }
+            
+            let analysis_module = AnalysisModule;
+            if analysis_module.applies_to(tools, user_prompt, session_state) {
+                modules.push(Box::new(analysis_module));
+            }
+            
+            let system_module = SystemModule;
+            if system_module.applies_to(tools, user_prompt, session_state) {
+                modules.push(Box::new(system_module));
+            }
         }
         
-        let programming_module = ProgrammingModule;
-        if programming_module.applies_to(tools, user_prompt, session_state) {
-            modules.push(Box::new(programming_module));
-        }
-        
-        let analysis_module = AnalysisModule;
-        if analysis_module.applies_to(tools, user_prompt, session_state) {
-            modules.push(Box::new(analysis_module));
-        }
-        
-        let system_module = SystemModule;
-        if system_module.applies_to(tools, user_prompt, session_state) {
-            modules.push(Box::new(system_module));
-        }
-        
-        // Add behavioral modules
-        let planning_module = TaskPlanningModule;
-        if planning_module.applies_to(tools, user_prompt, session_state) {
-            modules.push(Box::new(planning_module));
-        }
-        
-        let progress_module = ProgressMonitoringModule;
-        if progress_module.applies_to(tools, user_prompt, session_state) {
-            modules.push(Box::new(progress_module));
+        // Handle explicit behavior hints
+        if let Some(behaviors) = behavior_hints {
+            for behavior in behaviors {
+                match behavior.as_str() {
+                    "planning" => {
+                        modules.push(Box::new(TaskPlanningModule));
+                    },
+                    "progress" => {
+                        modules.push(Box::new(ProgressMonitoringModule));
+                    },
+                    _ => {
+                        // For unknown behaviors, create a generic behavior module
+                        modules.push(Box::new(GenericBehaviorModule::new(behavior.clone())));
+                    }
+                }
+            }
+        } else {
+            // Fall back to auto-detection for behavioral modules
+            let planning_module = TaskPlanningModule;
+            if planning_module.applies_to(tools, user_prompt, session_state) {
+                modules.push(Box::new(planning_module));
+            }
+            
+            let progress_module = ProgressMonitoringModule;
+            if progress_module.applies_to(tools, user_prompt, session_state) {
+                modules.push(Box::new(progress_module));
+            }
         }
         
         modules

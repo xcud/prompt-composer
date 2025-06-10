@@ -193,6 +193,7 @@ mod tests {
                 ..Default::default()
             }),
             domain_hints: None,
+            behavior_hints: None,
             task_complexity: Some(TaskComplexity::Simple),
         };
 
@@ -216,6 +217,7 @@ mod tests {
             mcp_config: McpConfig { mcp_servers },
             session_state: None,
             domain_hints: None,
+            behavior_hints: None,
             task_complexity: None,
         };
 

@@ -310,13 +310,28 @@ if (!nativeBinding) {
   throw new Error(`Failed to load native binding`)
 }
 
-const { composeSystemPrompt, composeSystemPromptWithPromptsDir, listAvailableDomains, listAvailableDomainsWithPromptsDir, listAvailableBehaviors, listAvailableBehaviorsWithPromptsDir, isAvailable, getStatus } = nativeBinding
+const { 
+  composeSystemPromptWithPromptsDir,
+  isAvailable, 
+  getStatus: nativeGetStatus 
+} = nativeBinding
 
-module.exports.composeSystemPrompt = composeSystemPrompt
-module.exports.composeSystemPromptWithPromptsDir = composeSystemPromptWithPromptsDir
-module.exports.listAvailableDomains = listAvailableDomains
-module.exports.listAvailableDomainsWithPromptsDir = listAvailableDomainsWithPromptsDir
-module.exports.listAvailableBehaviors = listAvailableBehaviors
-module.exports.listAvailableBehaviorsWithPromptsDir = listAvailableBehaviorsWithPromptsDir
-module.exports.isAvailable = isAvailable
-module.exports.getStatus = getStatus
+// Minimal convenience functions for data marshaling only
+function composeSystemPrompt(request) {
+  const requestJson = typeof request === 'string' ? request : JSON.stringify(request);
+  const promptsDir = join(__dirname, 'prompts');
+  const responseJson = composeSystemPromptWithPromptsDir(requestJson, promptsDir);
+  return JSON.parse(responseJson);
+}
+
+function getStatus() {
+  const statusJson = nativeGetStatus();
+  return JSON.parse(statusJson);
+}
+
+// Export the minimal API
+module.exports = {
+  composeSystemPrompt,
+  isAvailable,
+  getStatus
+}

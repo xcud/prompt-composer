@@ -36,7 +36,13 @@ impl PromptComposer {
         let session_state = request.session_state.as_ref().cloned().unwrap_or_default();
         
         // Select appropriate modules
-        let modules = ModuleSelector::select_modules(tools, &request.user_prompt, &session_state);
+        let modules = ModuleSelector::select_modules(
+            tools, 
+            &request.user_prompt, 
+            &session_state,
+            request.domain_hints.as_deref(),
+            request.behavior_hints.as_deref()
+        );
         
         // Generate prompt content (this will include tool instructions)
         let (system_prompt, tool_instructions_used) = self.generate_prompt_content(request, tools, &modules, &session_state)?;
@@ -206,6 +212,7 @@ mod tests {
             mcp_config: McpConfig { mcp_servers: mcp_servers.clone() },
             session_state: None,
             domain_hints: None,
+            behavior_hints: None,
             task_complexity: None,
         };
 
@@ -214,6 +221,7 @@ mod tests {
             mcp_config: McpConfig { mcp_servers },
             session_state: None,
             domain_hints: None,
+            behavior_hints: None,
             task_complexity: None,
         };
 

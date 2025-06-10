@@ -67,6 +67,8 @@ pub struct PromptRequest {
     #[serde(skip_serializing_if = "Option::is_none")]
     pub domain_hints: Option<Vec<String>>,
     #[serde(skip_serializing_if = "Option::is_none")]
+    pub behavior_hints: Option<Vec<String>>,
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub task_complexity: Option<TaskComplexity>,
 }
 

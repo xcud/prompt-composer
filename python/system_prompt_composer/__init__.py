@@ -51,7 +51,7 @@ from ._system_prompt_composer import (
     get_status
 )
 
-__version__ = "0.1.0"
+__version__ = "1.0.4"
 
 # Get the path to the built-in prompts directory
 _BUILTIN_PROMPTS_DIR = os.path.join(os.path.dirname(__file__), 'prompts')

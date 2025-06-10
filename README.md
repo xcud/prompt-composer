@@ -109,14 +109,8 @@ Generate an intelligent system prompt based on available tools and context.
 }
 ```
 
-#### `listAvailableDomains()`
-Returns array of available domain modules: `["programming", "analysis", "filesystem", "system"]`
-
-#### `listAvailableBehaviors()` 
-Returns array of available behavior modules: `["planning", "progress", "reasoning", "tools"]`
-
 #### `getStatus()`
-Returns system status and configuration information.
+Returns system status and configuration information including available domains and behaviors.
 
 #### `isAvailable()`
 Always returns `true` for native bindings.

@@ -53,8 +53,6 @@ console.log(response.system_prompt);
 ```javascript
 const { 
   composeSystemPrompt,
-  listAvailableDomains,
-  listAvailableBehaviors,
   getStatus,
   isAvailable 
 } = require('system-prompt-composer');
@@ -98,24 +96,8 @@ const response = await composeSystemPrompt(request);
 }
 ```
 
-#### `listAvailableDomains()`
-Returns array of available domain modules.
-
-```javascript
-const domains = await listAvailableDomains();
-// ["analysis", "filesystem", "programming", "system"]
-```
-
-#### `listAvailableBehaviors()`
-Returns array of available behavior modules.
-
-```javascript
-const behaviors = await listAvailableBehaviors();
-// ["planning", "progress", "reasoning", "tools"]
-```
-
 #### `getStatus()`
-Returns system status and configuration.
+Returns system status and configuration including available domains and behaviors.
 
 ```javascript
 const status = await getStatus();
