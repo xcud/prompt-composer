@@ -251,6 +251,24 @@ mod napi_bindings {
             .map_err(|e| napi::Error::from_reason(format!("Serialization failed: {}", e)))
     }
 
+    /// Compose a system prompt with custom prompts directory
+    #[napi]
+    pub fn compose_system_prompt_with_prompts_dir(request: String, prompts_dir: String) -> napi::Result<String> {
+        use serde_json;
+        
+        // Parse the request
+        let parsed_request: types::PromptRequest = serde_json::from_str(&request)
+            .map_err(|e| napi::Error::from_reason(format!("Invalid JSON: {}", e)))?;
+        
+        // Call the version with custom prompts directory
+        let response = crate::compose_system_prompt_cached_with_prompts_dir(parsed_request, Some(prompts_dir))
+            .map_err(|e| napi::Error::from_reason(format!("Composition failed: {}", e)))?;
+        
+        // Return as JSON string
+        serde_json::to_string(&response)
+            .map_err(|e| napi::Error::from_reason(format!("Serialization failed: {}", e)))
+    }
+
     /// List available domain modules
     #[napi]
     pub fn list_available_domains() -> napi::Result<Vec<String>> {
@@ -258,10 +276,24 @@ mod napi_bindings {
             .map_err(|e| napi::Error::from_reason(format!("Failed to list domains: {}", e)))
     }
 
+    /// List available domain modules with custom prompts directory
+    #[napi]
+    pub fn list_available_domains_with_prompts_dir(prompts_dir: String) -> napi::Result<Vec<String>> {
+        crate::list_available_domains_in_dir(prompts_dir)
+            .map_err(|e| napi::Error::from_reason(format!("Failed to list domains: {}", e)))
+    }
+
     /// List available behavior modules  
     #[napi]
     pub fn list_available_behaviors() -> napi::Result<Vec<String>> {
         crate::list_available_behaviors()
+            .map_err(|e| napi::Error::from_reason(format!("Failed to list behaviors: {}", e)))
+    }
+
+    /// List available behavior modules with custom prompts directory
+    #[napi]
+    pub fn list_available_behaviors_with_prompts_dir(prompts_dir: String) -> napi::Result<Vec<String>> {
+        crate::list_available_behaviors_in_dir(prompts_dir)
             .map_err(|e| napi::Error::from_reason(format!("Failed to list behaviors: {}", e)))
     }
 
