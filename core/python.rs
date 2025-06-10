@@ -116,9 +116,35 @@ fn list_available_behaviors_in_dir(prompts_dir: &str) -> PyResult<String> {
         .map_err(|e| PyRuntimeError::new_err(format!("Failed to serialize behaviors: {}", e)))
 }
 
+/// Python wrapper for getting status information
+#[pyfunction]
+fn get_status() -> PyResult<String> {
+    use serde_json;
+    
+    let domains = crate::list_available_domains().unwrap_or_default();
+    let behaviors = crate::list_available_behaviors().unwrap_or_default();
+    
+    let status = serde_json::json!({
+        "available": true,
+        "source": "python",
+        "version": env!("CARGO_PKG_VERSION"),
+        "domains": domains,
+        "behaviors": behaviors
+    });
+    
+    serde_json::to_string(&status)
+        .map_err(|e| PyRuntimeError::new_err(format!("Failed to serialize status: {}", e)))
+}
+
+/// Test function to verify module registration
+#[pyfunction]
+fn test_tools_feature() -> PyResult<String> {
+    Ok("Tools feature is working!".to_string())
+}
+
 /// Python module definition
 #[pymodule]
-fn _system_prompt_composer(_py: Python, m: &PyModule) -> PyResult<()> {
+pub fn python_module(_py: Python, m: &PyModule) -> PyResult<()> {
     // Core functions
     m.add_function(wrap_pyfunction!(compose_system_prompt, m)?)?;
     m.add_function(wrap_pyfunction!(compose_system_prompt_with_prompts_dir, m)?)?;
@@ -131,6 +157,10 @@ fn _system_prompt_composer(_py: Python, m: &PyModule) -> PyResult<()> {
     m.add_function(wrap_pyfunction!(list_available_behaviors, m)?)?;
     m.add_function(wrap_pyfunction!(list_available_domains_in_dir, m)?)?;
     m.add_function(wrap_pyfunction!(list_available_behaviors_in_dir, m)?)?;
+    m.add_function(wrap_pyfunction!(get_status, m)?)?;
+    
+    // Test function
+    m.add_function(wrap_pyfunction!(test_tools_feature, m)?)?;
     
     // Add version info
     m.add("__version__", "0.1.0")?;

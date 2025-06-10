@@ -47,7 +47,8 @@ from ._system_prompt_composer import (
     compose_system_prompt_cached_with_prompts_dir as _compose_system_prompt_cached_with_prompts_dir,
     refresh_server_tools,
     list_available_domains_in_dir,
-    list_available_behaviors_in_dir
+    list_available_behaviors_in_dir,
+    get_status
 )
 
 __version__ = "0.1.0"
@@ -130,7 +131,8 @@ __all__ = [
     "compose_system_prompt_cached_with_prompts_dir",
     "refresh_server_tools",
     "list_available_domains",
-    "list_available_behaviors", 
+    "list_available_behaviors",
     "list_available_domains_in_dir",
-    "list_available_behaviors_in_dir"
+    "list_available_behaviors_in_dir",
+    "get_status"
 ]
