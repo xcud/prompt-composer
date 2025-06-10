@@ -329,9 +329,16 @@ function getStatus() {
   return JSON.parse(statusJson);
 }
 
+function composeSystemPromptWithCustomDir(request, promptsDir) {
+  const requestJson = typeof request === 'string' ? request : JSON.stringify(request);
+  const responseJson = composeSystemPromptWithPromptsDir(requestJson, promptsDir);
+  return JSON.parse(responseJson);
+}
+
 // Export the minimal API
 module.exports = {
   composeSystemPrompt,
+  composeSystemPromptWithCustomDir,
   isAvailable,
   getStatus
 }
