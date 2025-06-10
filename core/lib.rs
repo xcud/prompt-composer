@@ -148,6 +148,12 @@ pub fn list_available_behaviors() -> Result<Vec<String>, PromptError> {
     composer.list_behaviors()
 }
 
+/// List available tool modules in default prompts directory
+pub fn list_available_tools() -> Result<Vec<String>, PromptError> {
+    let composer = PromptComposer::new();
+    composer.list_tools()
+}
+
 /// List available domain modules in custom prompts directory
 pub fn list_available_domains_in_dir(prompts_dir: String) -> Result<Vec<String>, PromptError> {
     let composer = PromptComposer::with_prompts_dir(prompts_dir);
@@ -158,6 +164,12 @@ pub fn list_available_domains_in_dir(prompts_dir: String) -> Result<Vec<String>,
 pub fn list_available_behaviors_in_dir(prompts_dir: String) -> Result<Vec<String>, PromptError> {
     let composer = PromptComposer::with_prompts_dir(prompts_dir);
     composer.list_behaviors()
+}
+
+/// List available tool modules in custom prompts directory
+pub fn list_available_tools_in_dir(prompts_dir: String) -> Result<Vec<String>, PromptError> {
+    let composer = PromptComposer::with_prompts_dir(prompts_dir);
+    composer.list_tools()
 }
 
 #[cfg(test)]
@@ -297,6 +309,20 @@ mod napi_bindings {
             .map_err(|e| napi::Error::from_reason(format!("Failed to list behaviors: {}", e)))
     }
 
+    /// List available tool modules
+    #[napi]
+    pub fn list_available_tools() -> napi::Result<Vec<String>> {
+        crate::list_available_tools()
+            .map_err(|e| napi::Error::from_reason(format!("Failed to list tools: {}", e)))
+    }
+
+    /// List available tool modules with custom prompts directory
+    #[napi]
+    pub fn list_available_tools_with_prompts_dir(prompts_dir: String) -> napi::Result<Vec<String>> {
+        crate::list_available_tools_in_dir(prompts_dir)
+            .map_err(|e| napi::Error::from_reason(format!("Failed to list tools: {}", e)))
+    }
+
     /// Check if the native bindings are available (always true)
     #[napi]
     pub fn is_available() -> bool {
@@ -310,13 +336,15 @@ mod napi_bindings {
         
         let domains = crate::list_available_domains().unwrap_or_default();
         let behaviors = crate::list_available_behaviors().unwrap_or_default();
+        let tools = crate::list_available_tools().unwrap_or_default();
         
         let status = serde_json::json!({
             "available": true,
             "source": "native",
             "version": env!("CARGO_PKG_VERSION"),
             "domains": domains,
-            "behaviors": behaviors
+            "behaviors": behaviors,
+            "tools": tools
         });
         
         serde_json::to_string(&status)

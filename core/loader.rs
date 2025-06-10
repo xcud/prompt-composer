@@ -65,6 +65,19 @@ impl PromptLoader {
         self.load_prompt("behaviors", behavior)
     }
 
+    /// Load tool-specific guidance
+    pub fn load_tool(&mut self, tool_name: &str) -> Result<String, PromptError> {
+        self.load_prompt("tools", tool_name)
+    }
+
+    /// Check if a tool-specific prompt file exists
+    pub fn has_tool_prompt(&self, tool_name: &str) -> bool {
+        let file_path = Path::new(&self.prompts_dir)
+            .join("tools")
+            .join(format!("{}.md", tool_name));
+        file_path.exists()
+    }
+
     /// Extract the main content from markdown (skip headers, get body)
     pub fn extract_guidance(&self, markdown_content: &str) -> String {
         let lines: Vec<&str> = markdown_content.lines().collect();
@@ -108,6 +121,11 @@ impl PromptLoader {
         self.list_category("behaviors")
     }
 
+    /// Get list of available tool files
+    pub fn list_tools(&self) -> Result<Vec<String>, PromptError> {
+        self.list_category("tools")
+    }
+
     fn list_category(&self, category: &str) -> Result<Vec<String>, PromptError> {
         let category_path = Path::new(&self.prompts_dir).join(category);
         
@@ -146,6 +164,7 @@ impl PromptLoader {
 
         let domains_path = prompts_path.join("domains");
         let behaviors_path = prompts_path.join("behaviors");
+        let tools_path = prompts_path.join("tools");
 
         if !domains_path.exists() {
             return Err(PromptError::ConfigError(
@@ -157,6 +176,11 @@ impl PromptLoader {
             return Err(PromptError::ConfigError(
                 format!("Behaviors directory does not exist: {:?}", behaviors_path)
             ));
+        }
+
+        // Tools directory is optional for backward compatibility
+        if !tools_path.exists() {
+            eprintln!("Note: Tools directory does not exist: {:?} (this is optional)", tools_path);
         }
 
         Ok(())

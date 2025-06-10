@@ -38,8 +38,12 @@ impl PromptComposer {
         // Select appropriate modules
         let modules = ModuleSelector::select_modules(tools, &request.user_prompt, &session_state);
         
-        // Generate prompt content
-        let system_prompt = self.generate_prompt_content(tools, &modules, &session_state)?;
+        // Generate prompt content (this will include tool instructions)
+        let (system_prompt, tool_instructions_used) = self.generate_prompt_content(request, tools, &modules, &session_state)?;
+        
+        // Build applied modules list (includes both behavior/domain modules and tool instructions)
+        let mut applied_modules: Vec<String> = modules.iter().map(|m| m.name().to_string()).collect();
+        applied_modules.extend(tool_instructions_used.into_iter().map(|t| format!("tool:{}", t)));
         
         // Track performance
         let elapsed = start_time.elapsed();
@@ -49,7 +53,7 @@ impl PromptComposer {
 
         Ok(PromptResponse {
             system_prompt,
-            applied_modules: modules.iter().map(|m| m.name().to_string()).collect(),
+            applied_modules,
             recognized_tools: tools.iter().map(|t| t.name.clone()).collect(),
             complexity_assessment: complexity,
         })
@@ -58,12 +62,14 @@ impl PromptComposer {
     /// Generate the final prompt content by combining all module outputs
     fn generate_prompt_content(
         &mut self,
+        request: &PromptRequest,
         tools: &[Tool], 
         modules: &[Box<dyn PromptModule>], 
         session_state: &SessionState
-    ) -> Result<String, PromptError> {
+    ) -> Result<(String, Vec<String>), PromptError> {
         let mut content = String::new();
         
+        // Add content from behavior/domain modules
         for module in modules {
             let module_content = module.generate_content(tools, session_state, &mut self.loader)?;
             if !module_content.is_empty() {
@@ -74,6 +80,15 @@ impl PromptComposer {
             }
         }
         
+        // Add tool-specific instructions for each MCP server
+        let (tool_instructions, included_tools) = self.generate_tool_instructions(request)?;
+        if !tool_instructions.is_empty() {
+            if !content.is_empty() {
+                content.push_str("\n\n");
+            }
+            content.push_str(&tool_instructions);
+        }
+        
         // Add general guidance if we have tools but no specific modules generated content
         if content.is_empty() && !tools.is_empty() {
             content = format!(
@@ -82,7 +97,42 @@ impl PromptComposer {
             );
         }
         
-        Ok(content)
+        Ok((content, included_tools))
+    }
+
+    /// Generate tool-specific instructions based on available MCP servers
+    fn generate_tool_instructions(&mut self, request: &PromptRequest) -> Result<(String, Vec<String>), PromptError> {
+        let mut tool_content = String::new();
+        let mut included_tools = Vec::new();
+        
+        // Check each MCP server for corresponding tool instructions
+        for (server_name, _server_config) in &request.mcp_config.mcp_servers {
+            if self.loader.has_tool_prompt(server_name) {
+                match self.loader.load_tool(server_name) {
+                    Ok(tool_instructions) => {
+                        if !tool_content.is_empty() {
+                            tool_content.push_str("\n\n");
+                        }
+                        
+                        // Extract the guidance content and format it appropriately
+                        let guidance = self.loader.extract_guidance(&tool_instructions);
+                        if !guidance.is_empty() {
+                            tool_content.push_str(&guidance);
+                            included_tools.push(server_name.clone());
+                        }
+                    }
+                    Err(e) => {
+                        eprintln!("Warning: Failed to load tool instructions for {}: {}", server_name, e);
+                    }
+                }
+            }
+        }
+        
+        if !included_tools.is_empty() {
+            eprintln!("Included tool-specific instructions for: {}", included_tools.join(", "));
+        }
+        
+        Ok((tool_content, included_tools))
     }
 
     /// Get list of available domain modules
@@ -93,6 +143,11 @@ impl PromptComposer {
     /// Get list of available behavior modules  
     pub fn list_behaviors(&self) -> Result<Vec<String>, PromptError> {
         self.loader.list_behaviors()
+    }
+
+    /// Get list of available tool modules
+    pub fn list_tools(&self) -> Result<Vec<String>, PromptError> {
+        self.loader.list_tools()
     }
 }
 

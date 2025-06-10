@@ -121,6 +121,76 @@ Returns system status and configuration information.
 #### `isAvailable()`
 Always returns `true` for native bindings.
 
+## Tools Directory Feature
+
+The system-prompt-composer supports tool-specific instruction files to improve how LLMs use MCP tools.
+
+### How It Works
+
+When you call `composeSystemPrompt()` with MCP server configurations, the system automatically looks for corresponding instruction files in `prompts/tools/` and includes them in the generated system prompt.
+
+```
+prompts/
+├── behaviors/          # General AI behaviors 
+├── domains/           # Domain-specific knowledge
+├── tools/             # NEW: Tool-specific instructions
+│   ├── desktop-commander.md
+│   ├── weather-service.md
+│   └── [your-mcp-server-name].md
+└── server_patterns.toml
+```
+
+### Creating Tool Instructions
+
+Create a markdown file named after your MCP server:
+
+```markdown
+# My Custom Tool Instructions
+
+You have access to my-custom-tool with these capabilities:
+- Function 1: description and best practices
+- Function 2: common usage patterns
+
+## Best Practices
+- Specific guidance for effective tool usage
+- Error handling approaches
+- Performance considerations
+```
+
+### Updated API Response
+
+Tool instructions are automatically included and tracked:
+
+```javascript
+{
+  system_prompt: "...",
+  applied_modules: [
+    "planning",
+    "tool:desktop-commander",  // Tool instructions included
+    "tool:weather-service"
+  ],
+  recognized_tools: [...],
+  complexity_assessment: "simple"
+}
+```
+
+The `getStatus()` function now also returns available tools:
+```javascript
+{
+  available: true,
+  domains: ["analysis", "filesystem", "programming"],
+  behaviors: ["planning", "progress", "reasoning"], 
+  tools: ["desktop-commander", "weather-service"],  // NEW
+  version: "1.0.3"
+}
+```
+
+### Benefits
+- **Better Tool Usage**: LLMs get specific guidance for each tool
+- **Developer Control**: Customize instructions for your MCP tools
+- **Automatic Integration**: Just add markdown files - no code changes
+- **Graceful Fallback**: Missing tool files are safely ignored
+
 ## Architecture
 
 **Native Node.js Architecture (NEW):**
