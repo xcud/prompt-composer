@@ -5,10 +5,16 @@
 
 /** Compose a system prompt using the cached version for better performance */
 export declare function composeSystemPrompt(request: string): string
+/** Compose a system prompt with custom prompts directory */
+export declare function composeSystemPromptWithPromptsDir(request: string, promptsDir: string): string
 /** List available domain modules */
 export declare function listAvailableDomains(): Array<string>
+/** List available domain modules with custom prompts directory */
+export declare function listAvailableDomainsWithPromptsDir(promptsDir: string): Array<string>
 /** List available behavior modules   */
 export declare function listAvailableBehaviors(): Array<string>
+/** List available behavior modules with custom prompts directory */
+export declare function listAvailableBehaviorsWithPromptsDir(promptsDir: string): Array<string>
 /** Check if the native bindings are available (always true) */
 export declare function isAvailable(): boolean
 /** Get status information as JSON string */
