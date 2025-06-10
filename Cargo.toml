@@ -7,10 +7,6 @@ license = "MIT"
 repository = "https://github.com/your-org/prompt-composer"
 readme = "README.md"
 
-[[bin]]
-name = "prompt-composer"
-path = "core/main.rs"
-
 [lib]
 name = "prompt_composer"
 path = "core/lib.rs"

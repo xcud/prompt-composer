@@ -37,6 +37,7 @@ pub struct ToolDiscovery {
     last_refresh: HashMap<String, SystemTime>,
     cache_duration: Duration,
     server_patterns: Option<ServerPatternsConfig>,
+    prompts_dir: Option<String>,
 }
 
 impl ToolDiscovery {
@@ -46,6 +47,18 @@ impl ToolDiscovery {
             last_refresh: HashMap::new(),
             cache_duration: Duration::from_secs(300), // 5 minutes cache
             server_patterns: None,
+            prompts_dir: None,
+        }
+    }
+
+    /// Create a new ToolDiscovery with custom prompts directory
+    pub fn with_prompts_dir(prompts_dir: String) -> Self {
+        Self {
+            tools_by_server: HashMap::new(),
+            last_refresh: HashMap::new(),
+            cache_duration: Duration::from_secs(300), // 5 minutes cache
+            server_patterns: None,
+            prompts_dir: Some(prompts_dir),
         }
     }
 
@@ -67,6 +80,19 @@ impl ToolDiscovery {
 
     /// Find the server patterns configuration file
     fn find_config_file(&self) -> Result<String, PromptError> {
+        // If prompts_dir is specified, look there first
+        if let Some(ref prompts_dir) = self.prompts_dir {
+            let config_path = Path::new(prompts_dir).join("server_patterns.toml");
+            if config_path.exists() {
+                return Ok(config_path.to_string_lossy().to_string());
+            } else {
+                return Err(PromptError::ConfigError(
+                    format!("Server patterns configuration file not found at: {}", config_path.display())
+                ));
+            }
+        }
+
+        // Fallback to relative path discovery (for backward compatibility)
         let possible_paths = [
             "prompts/server_patterns.toml",
             "../prompts/server_patterns.toml",

@@ -31,7 +31,10 @@ pub async fn compose_system_prompt_with_prompts_dir(
     let mut discovery = {
         let mut guard = TOOL_DISCOVERY.lock().unwrap();
         if guard.is_none() {
-            *guard = Some(ToolDiscovery::new());
+            *guard = Some(match &prompts_dir {
+                Some(dir) => ToolDiscovery::with_prompts_dir(dir.clone()),
+                None => ToolDiscovery::new(),
+            });
         }
         guard.take().unwrap()
     };

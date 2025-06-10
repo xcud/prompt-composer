@@ -5,7 +5,7 @@ build-backend = "maturin"
 [project]
 name = "prompt-composer"
 description = "A modular system prompt composition framework for AI assistants"
-authors = [{name = "LIT Platform Team"}]
+authors = [{name = "Ben Vierck"}]
 license = {text = "MIT"}
 keywords = ["ai", "llm", "prompt", "mcp", "tools"]
 classifiers = [
@@ -26,14 +26,16 @@ requires-python = ">=3.8"
 dynamic = ["version"]
 
 [project.urls]
-Homepage = "https://github.com/your-org/prompt-composer"
-Repository = "https://github.com/your-org/prompt-composer"
-Documentation = "https://github.com/your-org/prompt-composer#readme"
+Homepage = "https://github.com/xcud/prompt-composer"
+Repository = "https://github.com/xcud/prompt-composer"
+Documentation = "https://github.com/xcud/prompt-composer#readme"
+Issues = "https://github.com/xcud/prompt-composer/issues"
 
 [tool.maturin]
 features = ["pyo3/extension-module"]
 python-source = "python"
 module-name = "prompt_composer._prompt_composer"
+include = ["python/prompt_composer/prompts/**/*"]
 
 [tool.maturin.target.x86_64-apple-darwin]
 features = ["python"]
