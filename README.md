@@ -1,5 +1,7 @@
 # Prompt Composer
 
+**Thesis**: System prompts are doing much of the heavy lifting in differentiating name-brand LLM performance from open weight self-hosted models. This project aspires to be a community-owned framework that can be injected into any workflow or client to improve the performance of any model.
+
 A modular system prompt composition framework that intelligently generates system prompts for AI assistants based on available tools, task complexity, and contextual information.
 
 ## Language Support
